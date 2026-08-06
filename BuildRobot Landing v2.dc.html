@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BuildRobot.ai — Idea In. Hardware Out.</title>
+<meta name="description" content="Go from robot idea to manufacturing-ready hardware in days, not quarters. AI-designed electronics, firmware, and manufacturing packages.">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
+<style>
+  :root {
+    --blue: #FF4F18;
+    --cyan: #FF4F18;
+    --gap: 160px;
+    --text-primary: #141517;
+    --text-secondary: #5B6672;
+    --text-muted: #8A919A;
+    --border: rgba(20,21,23,0.12);
+    --surface: #F2F4F7;
+    --card-radius: 16px;
+    --section-pad: clamp(64px, 8vw, 120px);
+    --container-max: 1360px;
+    --side-pad: clamp(24px, 3.5vw, 40px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  html, body { background: #FFFFFF; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  a { color: #A63008; text-decoration: none; transition: color 0.2s ease; }
+  a:hover { color: var(--text-primary); }
+  ::selection { background: rgba(255,79,24,0.22); }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  img { max-width: 100%; height: auto; }
+
+  /* ── Animations ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes subtlePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,79,24,0.18); }
+    50% { box-shadow: 0 0 0 8px rgba(255,79,24,0); }
+  }
+
+  /* ── Reveal on scroll ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── Card hover ── */
+  .card-lift {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  }
+  .card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(20,21,23,0.08), 0 2px 8px rgba(20,21,23,0.04);
+  }
+
+  /* ── Hamburger ── */
+  .hamburger {
+    display: none;
+    appearance: none;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    transition: background 0.2s;
+  }
+  .hamburger:hover { background: var(--surface); }
+
+  /* ── Nav links ── */
+  .nav-link {
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+    position: relative;
+  }
+  .nav-link:hover { color: var(--text-primary); }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background: var(--blue);
+    transition: width 0.25s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  /* ── Typing cursor ── */
+  .typing-cursor::after {
+    content: '|';
+    color: var(--blue);
+    font-weight: 300;
+    animation: cursorBlink 0.8s infinite;
+    margin-left: 2px;
+  }
+
+  /* ── Form factor tab ── */
+  .factor-btn {
+    appearance: none;
+    text-align: left;
+    cursor: pointer;
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    padding: 20px 16px 20px 20px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: inherit;
+    border-radius: 0 12px 12px 0;
+    transition: all 0.25s ease;
+  }
+  .factor-btn:hover {
+    background: rgba(242,244,247,0.5);
+  }
+
+  /* ── CTA button ── */
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 32px;
+    border-radius: 14px;
+    background: var(--blue);
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 17px;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+  }
+  .cta-btn:hover {
+    background: #E03F0C;
+    color: #FFFFFF;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255,79,24,0.25);
+  }
+
+  /* ── Hero images ── */
+  .hero-img-drone,
+  .hero-img-circuit {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  /* ── Crossfade image ── */
+  .crossfade-img {
+    transition: opacity 0.4s ease;
+  }
+
+  /* ── Mobile & Tablet breakpoints ── */
+  @media (max-width: 1100px) {
+    .hero-info-card, .hero-img-circuit { display: none !important; }
+  }
+  @media (max-width: 768px) {
+    .hamburger { display: flex; }
+    .nav-desktop { display: none; }
+    .nav-desktop.open { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(16px); padding: 20px 24px; border-bottom: 1px solid var(--border); gap: 16px; z-index: 10; }
+  }
+  @media (max-width: 480px) {
+    .prompt-box { min-height: 120px !important; }
+  }
+
+  /* ── Reduced motion ── */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .card-lift:hover { transform: none; }
+    .typing-cursor::after { animation: none; }
+    html { scroll-behavior: auto; }
+    .crossfade-img { transition: none; }
+  }
+</style>
+</helmet>
+
+<div style="width:100%; overflow-x:hidden; font-size:17px; line-height:1.6; background-color:#FFFFFF">
+
+  <!-- ════════ HEADER ════════ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.88); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--border)">
+    <div style="max-width:var(--container-max); margin:0 auto; padding:14px var(--side-pad); display:flex; align-items:center; justify-content:space-between; gap:12px; position:relative">
+      <div style="display:flex; align-items:center; gap:10px; font-size:18px; font-weight:700; letter-spacing:-0.03em">
+        BuildRobot.ai
+      </div>
+
+      <button class="hamburger" onClick="{{ toggleMenu }}" aria-label="Toggle navigation menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+
+      <nav class="nav-desktop {{ menuClass }}" style="display:flex; align-items:center; gap:8px 28px; font-size:15px; font-weight:500">
+        <a href="#problem" class="nav-link">Problem</a>
+        <a href="#pipeline" class="nav-link">Pipeline</a>
+        <a href="#output" class="nav-link">Output</a>
+        <a href="#teams" class="nav-link">Teams</a>
+        <a href="https://app.buildrobot.ai/" class="cta-btn" style="padding:10px 20px; font-size:14px">Start Building</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ════════ HERO ════════ -->
+  <section id="hero-section" style="position:relative; overflow:hidden; background:var(--surface); background-image:linear-gradient(rgba(20,21,23,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20,21,23,0.04) 1px, transparent 1px), linear-gradient(rgba(20,21,23,0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(20,21,23,0.09) 1px, transparent 1px); background-size:28px 28px, 28px 28px, 140px 140px, 140px 140px; border-bottom:1px solid var(--border); min-height:calc(100vh - 74px); display:flex; align-items:center;">
+
+    <div style="width:100%; max-width:var(--container-max); margin:0 auto; padding:40px var(--side-pad); display:flex; align-items:center; justify-content:space-between; gap:20px;">
+
+      <!-- Info card - frosted glass (placed on left flank) -->
+      <div class="hero-info-card" style="flex:0 0 auto; width:clamp(250px,22vw,300px); z-index:5;">
+        <div style="background:rgba(255,255,255,0.72); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.6); box-shadow:0 8px 32px rgba(20,21,23,0.06), 0 1px 3px rgba(20,21,23,0.04); border-radius:var(--card-radius); padding:16px 18px; width:100%">
+          <div style="font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#A63008; font-size:10px">AI robotics engineering</div>
+          <p style="margin:10px 0 0; font-size:14px; line-height:1.3; letter-spacing:-0.02em; font-weight:600; color:var(--text-primary)">Idea to manufacturing-ready robot. Days, not quarters.</p>
+          <p style="margin:6px 0 0; font-size:12px; color:var(--text-secondary); line-height:1.4">AI-designed electronics, firmware &amp; manufacturing. You approve every step.</p>
+        </div>
+        <div style="border:1px solid var(--border); border-top:0; background:rgba(255,255,255,0.72); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:0 0 var(--card-radius) var(--card-radius); padding:8px 18px; display:flex; flex-wrap:wrap; gap:4px 14px; width:100%; margin-top:-1px">
+          <span style="font-size:11px; color:var(--text-muted); font-weight:500">Six-axis arms</span>
+          <span style="font-size:11px; color:var(--text-muted); font-weight:500">Quadcopters</span>
+          <span style="font-size:11px; color:var(--text-muted); font-weight:500">AMRs</span>
+          <span style="font-size:11px; color:var(--text-muted); font-weight:500">Gantries</span>
+        </div>
+        <img class="hero-img-drone" src="./pngtree-drone-concept-vector-rendering-o-msdirmka-8e9s.png" alt="Drone concept render" width="618" height="403" style="display:block; max-width:280px; width:100%; height:auto; margin:46px auto 0; transform:scale(1.15); opacity:0.85">
+      </div>
+
+      <!-- Center Column -->
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; z-index:3;">
+
+      <!-- Big headline -->
+      <div style="position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; text-align:center; z-index:3; margin-top:-40px;">
+        <div style="display:inline-block; padding:1px 12px 2px; color:var(--text-primary); line-height:0.92; font-weight:800; letter-spacing:-0.03em; font-size:clamp(46px,8.5vw,108px)">IDEA IN.</div>
+        <div style="display:inline-block; padding:1px 12px 2px; color:var(--text-primary); line-height:0.92; font-weight:800; letter-spacing:-0.03em; font-size:clamp(46px,8.5vw,108px)">HARDWARE</div>
+        <div style="display:inline-block; padding:1px 12px 2px; background:var(--blue); color:#FFFFFF; line-height:0.92; font-weight:800; letter-spacing:-0.03em; font-size:clamp(46px,8.5vw,108px); border-radius:8px">OUT.</div>
+      </div>
+
+      <!-- Typing prompt box (brought UP right below headline) -->
+      <div style="position:relative; margin-top:54px; width:100%; max-width:760px; margin-left:auto; margin-right:auto; z-index:3">
+        <div class="prompt-box" style="background:#FFFFFF; box-shadow:0 0 0 1px var(--border), 0 8px 32px rgba(20,21,23,0.06); border-radius:var(--card-radius); padding:20px 24px 16px; height:154px; display:flex; flex-direction:column; justify-content:space-between">
+          <textarea class="typing-cursor" style="font-size:clamp(18px,2.2vw,24px); color:var(--text-primary); letter-spacing:-0.02em; line-height:1.4; font-weight:500; border:none; outline:none; resize:none; background:transparent; width:100%; flex:1; font-family:inherit; padding:0;" placeholder="{{ typedText }}" onInput="{{ handleInput }}"></textarea>
+          <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:12px">
+            <a href="https://app.buildrobot.ai/" style="width:34px; height:34px; border:1px solid #D8DDE5; border-radius:8px; display:grid; place-items:center; color:var(--text-secondary); transition:background 0.2s; text-decoration:none;" aria-label="Upload Image">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M3 16l5-5 4 4 3-3 6 6"></path></svg>
+            </a>
+            <a href="{{ uploadHref }}" style="width:34px; height:34px; background:{{ uploadBg }}; border-radius:8px; display:grid; place-items:center; cursor:{{ uploadCursor }}; transition:transform 0.2s, background 0.2s; text-decoration:none;" aria-label="Start Building">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><path d="M12 20V5M5 12l7-7 7 7"></path></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pipeline breadcrumb -->
+      <div style="position:relative; width:100%; max-width:680px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px 12px; font-size:clamp(13px,1.5vw,16px); color:var(--text-secondary)">
+        <span style="display:flex; flex-wrap:wrap; align-items:center; gap:5px">
+          <strong style="color:var(--text-primary); font-weight:600">Idea</strong>
+          <span style="color:var(--text-muted)">→</span> AI engineering
+          <span style="color:var(--text-muted)">→</span> Electronics
+          <span style="color:var(--text-muted)">→</span> Firmware
+          <span style="color:var(--text-muted)">→</span> Manufacturing
+          <span style="color:var(--text-muted)">→</span>
+          <strong style="font-weight:600; color:var(--blue)">Robot</strong>
+        </span>
+      </div>
+      </div>
+
+      <!-- Circuit board image (placed on right flank) -->
+      <div class="hero-img-circuit" style="flex:0 0 auto; width:clamp(150px,15vw,220px); z-index:2; text-align:right; margin-top:-70px;">
+        <img src="./ee1355-2-section-removebg-preview-msdiblr2-n6hp.png" alt="Circuit board render" width="285" height="258" style="max-width:100%; height:auto; opacity:0.85; display:inline-block;">
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════ PROBLEM ════════ -->
+  <section id="problem" style="max-width:var(--container-max); margin:0 auto; padding:var(--section-pad) var(--side-pad) clamp(40px,5vw,60px)">
+    <div class="reveal">
+      <div style="font-size:13px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#A63008">The problem</div>
+      <h2 style="margin:16px 0 0; font-size:clamp(32px,4.6vw,56px); line-height:1.05; letter-spacing:-0.04em; font-weight:700">Robotics development is broken.</h2>
+      <p style="margin:14px 0 clamp(32px,4vw,48px); font-size:18px; color:var(--text-secondary); max-width:32em">Teams rebuild the same stack. Every. Single. Time.</p>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px">
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:28px; transition-delay:0ms">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <h3 style="margin:18px 0 8px; font-size:18px; font-weight:600; letter-spacing:-0.02em">12–36 month timelines</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary); line-height:1.5">Prototypes take longer than funding lasts.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:28px; transition-delay:100ms">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M9 7H5v4M15 17h4v-4M14 6l-8 8"></path></svg>
+        <h3 style="margin:18px 0 8px; font-size:18px; font-weight:600; letter-spacing:-0.02em">Disconnected toolchains</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary); line-height:1.5">CAD, EDA, firmware, sourcing — zero shared truth.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:28px; transition-delay:200ms">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 4 3 19h18L12 4Z"></path><path d="M12 10v4M12 17h.01"></path></svg>
+        <h3 style="margin:18px 0 8px; font-size:18px; font-weight:600; letter-spacing:-0.02em">Repeated errors</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary); line-height:1.5">Same voltage and pinout mistakes. Every board.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:28px; transition-delay:300ms">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 6h7v12H4zM13 6h7v7h-7z"></path></svg>
+        <h3 style="margin:18px 0 8px; font-size:18px; font-weight:600; letter-spacing:-0.02em">Knowledge silos</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary); line-height:1.5">Design lives in one engineer's head.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ OUTPUT ════════ -->
+  <section id="output" style="max-width:var(--container-max); margin:0 auto; padding:var(--section-pad) var(--side-pad) clamp(40px,5vw,60px)">
+    <div class="reveal">
+      <div style="font-size:13px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#A63008">What you get</div>
+      <h2 style="margin:16px 0 clamp(32px,4vw,48px); font-size:clamp(32px,4.6vw,56px); line-height:1.05; letter-spacing:-0.04em; font-weight:700">Every file a manufacturer needs.</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:16px">
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:0ms">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"></path></svg>
+          <span style="font-family:ui-monospace, Menlo, monospace; font-size:11px; letter-spacing:0.1em; color:var(--text-muted); font-weight:500">.BOM</span>
+        </div>
+        <h3 style="margin:16px 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">Bill of materials</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">Every part, sourced and priced.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:80ms">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M7 9h5v6M15 8v8"></path></svg>
+          <span style="font-family:ui-monospace, Menlo, monospace; font-size:11px; letter-spacing:0.1em; color:var(--text-muted); font-weight:500">.GBR</span>
+        </div>
+        <h3 style="margin:16px 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">PCB files</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">Gerber, drill, pick-and-place.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:160ms">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="m9 8-4 4 4 4M15 8l4 4-4 4"></path></svg>
+          <span style="font-family:ui-monospace, Menlo, monospace; font-size:11px; letter-spacing:0.1em; color:var(--text-muted); font-weight:500">.FW</span>
+        </div>
+        <h3 style="margin:16px 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">Firmware</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">Binaries and source.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:240ms">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 6h9M4 12h9M4 18h9M17 6l2 2 3-4M17 15l2 2 3-4"></path></svg>
+          <span style="font-family:ui-monospace, Menlo, monospace; font-size:11px; letter-spacing:0.1em; color:var(--text-muted); font-weight:500">.ASM</span>
+        </div>
+        <h3 style="margin:16px 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">Assembly instructions</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">Ordered, per subassembly.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:320ms">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12l4 4L19 6"></path></svg>
+          <span style="font-family:ui-monospace, Menlo, monospace; font-size:11px; letter-spacing:0.1em; color:var(--text-muted); font-weight:500">.TST</span>
+        </div>
+        <h3 style="margin:16px 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">Test procedures</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">Bring-up checks, board and system.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:400ms">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path></svg>
+          <span style="font-family:ui-monospace, Menlo, monospace; font-size:11px; letter-spacing:0.1em; color:var(--text-muted); font-weight:500">.DOC</span>
+        </div>
+        <h3 style="margin:16px 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">Supplier docs</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">Quote packs and datasheets.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ FORM FACTORS ════════ -->
+  <section style="max-width:var(--container-max); margin:0 auto; padding:var(--section-pad) var(--side-pad) clamp(40px,5vw,60px)">
+    <div class="reveal">
+      <div style="font-size:13px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#A63008">Form factors</div>
+      <h2 style="margin:16px 0 clamp(32px,4vw,48px); font-size:clamp(32px,4.6vw,56px); line-height:1.05; letter-spacing:-0.04em; font-weight:700">Build any robot.</h2>
+    </div>
+    <div class="reveal" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:clamp(24px,4vw,48px); align-items:start">
+      <div style="display:flex; flex-direction:column">
+        <sc-for list="{{ factors }}" as="f" hint-placeholder-count="5">
+          <button type="button" onClick="{{ f.select }}" class="factor-btn" style="background:{{ f.bg }}; color:{{ f.fg }}; border-left-color:{{ f.accent }}">
+            <span style="font-size:18px; font-weight:600; letter-spacing:-0.02em">{{ f.name }}</span>
+            <span style="font-size:13px; color:var(--text-muted); font-family:ui-monospace, Menlo, monospace">{{ f.spec }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:clamp(20px,3vw,32px); background-image:linear-gradient(rgba(20,21,23,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(20,21,23,0.05) 1px, transparent 1px); background-size:26px 26px; min-height:300px; display:flex; flex-direction:column; justify-content:space-between">
+        <sc-if value="{{ activeImage }}">
+          <img src="{{ activeImage }}" alt="Wireframe view of the selected robot form factor" class="crossfade-img" style="display:block; width:100%; height:auto; opacity:{{ imageOpacity }}">
+        </sc-if>
+        <div style="margin-top:12px; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#A63008; opacity:0.8; font-weight:600">{{ activeLabel }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ PIPELINE ════════ -->
+  <section id="pipeline" style="max-width:var(--container-max); margin:0 auto; padding:var(--section-pad) var(--side-pad) clamp(40px,5vw,60px)">
+    <div class="reveal">
+      <div style="font-size:13px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#A63008">The workflow</div>
+      <h2 style="margin:16px 0 clamp(36px,5vw,56px); font-size:clamp(32px,4.6vw,56px); line-height:1.05; letter-spacing:-0.04em; font-weight:700">One pipeline. Start to ship.</h2>
+    </div>
+    <div style="display:flex; flex-direction:column">
+      <div class="reveal" style="display:grid; grid-template-columns:minmax(56px,80px) 1fr; gap:20px; padding:24px 0; border-top:1px solid var(--border); transition-delay:0ms">
+        <div style="font-size:15px; font-weight:700; color:var(--blue)">01</div>
+        <div>
+          <h3 style="margin:0 0 6px; font-size:21px; font-weight:600; letter-spacing:-0.03em">Describe the robot</h3>
+          <p style="margin:0; font-size:16px; color:var(--text-secondary); max-width:36em">Plain language in. Structured spec out.</p>
+        </div>
+      </div>
+      <div class="reveal" style="display:grid; grid-template-columns:minmax(56px,80px) 1fr; gap:20px; padding:24px 0; border-top:1px solid var(--border); transition-delay:80ms">
+        <div style="font-size:15px; font-weight:700; color:var(--blue)">02</div>
+        <div>
+          <h3 style="margin:0 0 6px; font-size:21px; font-weight:600; letter-spacing:-0.03em">System architecture</h3>
+          <p style="margin:0; font-size:16px; color:var(--text-secondary); max-width:36em">Actuators, sensors, power — resolved together.</p>
+        </div>
+      </div>
+      <div class="reveal" style="display:grid; grid-template-columns:minmax(56px,80px) 1fr; gap:20px; padding:24px 0; border-top:1px solid var(--border); transition-delay:160ms">
+        <div style="font-size:15px; font-weight:700; color:var(--blue)">03</div>
+        <div>
+          <h3 style="margin:0 0 6px; font-size:21px; font-weight:600; letter-spacing:-0.03em">Electronics &amp; PCB</h3>
+          <p style="margin:0; font-size:16px; color:var(--text-secondary); max-width:36em">Schematic, layout, checked BOM.</p>
+        </div>
+      </div>
+      <div class="reveal" style="display:grid; grid-template-columns:minmax(56px,80px) 1fr; gap:20px; padding:24px 0; border-top:1px solid var(--border); transition-delay:240ms">
+        <div style="font-size:15px; font-weight:700; color:var(--blue)">04</div>
+        <div>
+          <h3 style="margin:0 0 6px; font-size:21px; font-weight:600; letter-spacing:-0.03em">Firmware &amp; simulation</h3>
+          <p style="margin:0 0 18px; font-size:16px; color:var(--text-secondary); max-width:36em">Compiled and tested on a digital twin before hardware exists.</p>
+          <div style="border:1px solid var(--border); border-radius:14px; background:var(--surface); padding:18px 20px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; line-height:1.9; max-width:44em">
+            <div style="color:var(--text-muted)">$ buildrobot sim arm-6r</div>
+            <div style="color:#A63008">→ firmware built · 148 KB</div>
+            <div style="color:#A63008">→ twin run 12.0s · joint limits ok</div>
+            <div style="color:var(--text-primary); font-weight:500">→ 3 warnings, 0 errors · awaiting your approval</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal" style="display:grid; grid-template-columns:minmax(56px,80px) 1fr; gap:20px; padding:24px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); transition-delay:320ms">
+        <div style="font-size:15px; font-weight:700; color:var(--blue)">05</div>
+        <div>
+          <h3 style="margin:0 0 6px; font-size:21px; font-weight:600; letter-spacing:-0.03em">Manufacturing package</h3>
+          <p style="margin:0; font-size:16px; color:var(--text-secondary); max-width:36em">Every file your CM needs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ TEAMS ════════ -->
+  <section id="teams" style="max-width:var(--container-max); margin:0 auto; padding:var(--section-pad) var(--side-pad) clamp(40px,5vw,60px)">
+    <div class="reveal">
+      <div style="font-size:13px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#A63008">For teams</div>
+      <h2 style="margin:16px 0 clamp(32px,4vw,48px); font-size:clamp(32px,4.6vw,56px); line-height:1.05; letter-spacing:-0.04em; font-weight:700">For teams that ship.</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px">
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:0ms">
+        <h3 style="margin:0 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">Version control</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">Every revision, diffable.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:100ms">
+        <h3 style="margin:0 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">Human review</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">Nothing ships without engineer approval.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:200ms">
+        <h3 style="margin:0 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">Role-based access</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">Scoped access per person.</p>
+      </div>
+      <div class="reveal card-lift" style="border:1px solid var(--border); border-radius:var(--card-radius); background:var(--surface); padding:26px; transition-delay:300ms">
+        <h3 style="margin:0 0 6px; font-size:17px; font-weight:600; letter-spacing:-0.02em">Enterprise security</h3>
+        <p style="margin:0; font-size:15px; color:var(--text-secondary)">SSO, private workspaces, your data.</p>
+      </div>
+    </div>
+    <p class="reveal" style="margin:20px 0 0; font-size:14px; color:var(--text-muted)">Audit trails, observability, multi-tenant deployment and API access — <a href="#teams">see enterprise details</a>.</p>
+  </section>
+
+  <!-- ════════ CTA ════════ -->
+  <section id="start" style="border-top:1px solid var(--border); background:radial-gradient(ellipse at center, rgba(255,79,24,0.05) 0%, transparent 70%)">
+    <div style="max-width:800px; margin:0 auto; padding:clamp(80px,10vw,140px) var(--side-pad); display:flex; flex-direction:column; align-items:center; text-align:center; gap:28px">
+      <h2 class="reveal" style="margin:0; font-size:clamp(30px,4.4vw,52px); line-height:1.1; letter-spacing:-0.04em; font-weight:700; max-width:18em">Describe your robot. See the design it takes to build it.</h2>
+      <a href="https://app.buildrobot.ai/" class="cta-btn reveal" style-hover="background:#E03F0C">
+        Start Building
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+      </a>
+      <p class="reveal" style="margin:0; font-size:14px; color:var(--text-muted); font-weight:500">No credit card required · Free to explore</p>
+    </div>
+  </section>
+
+  <!-- ════════ FOOTER ════════ -->
+  <footer style="border-top:1px solid var(--border)">
+    <div style="max-width:var(--container-max); margin:0 auto; padding:36px var(--side-pad) 48px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:20px 28px; font-size:14px">
+      <div style="display:flex; align-items:center; gap:10px; font-weight:600; letter-spacing:-0.03em">
+        BuildRobot.ai
+      </div>
+      <nav style="display:flex; flex-wrap:wrap; gap:20px">
+        <a href="#pipeline" style="color:var(--text-secondary); transition:color 0.2s">Product</a>
+        <a href="#output" style="color:var(--text-secondary); transition:color 0.2s">Docs</a>
+        <a href="#teams" style="color:var(--text-secondary); transition:color 0.2s">Enterprise</a>
+        <a href="#pipeline" style="color:var(--text-secondary); transition:color 0.2s">Changelog</a>
+        <a href="#start" style="color:var(--text-secondary); transition:color 0.2s">Contact</a>
+      </nav>
+      <div style="color:var(--text-muted)">© 2026 BuildRobot.ai</div>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accentBlue&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#FF4F18&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#FF4F18&quot;,&quot;#F2F4F7&quot;,&quot;#141517&quot;],&quot;section&quot;:&quot;Theme&quot;},&quot;sectionSpacing&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:160,&quot;min&quot;:120,&quot;max&quot;:200,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const ARM = 'uploads/robotarm3_wire_002-removebg-preview.png';
+const DRONE = 'uploads/pngtree-drone-concept-vector-rendering-of-3d-sketch-flight-remote-vector-picture-image_10090493-removebg-preview.png';
+
+const FACTORS = [
+  { name: 'Six-axis arm', spec: '6-axis · 25kg payload', label: 'ARM-6R / rev C', img: ARM },
+  { name: 'Quadcopter', spec: '4 rotors · 2.4kg MTOW', label: 'QUAD-4 / rev A', img: DRONE },
+  { name: 'Mobile robot', spec: 'diff drive · 60kg', label: 'AMR-2W / rev B', img: 'uploads/pasted-1785781426926-0.png' },
+  { name: 'Delta picker', spec: '3 arms · 120 picks/min', label: 'DLT-3 / rev A', img: 'uploads/OIP__1_-removebg-preview.png' }
+];
+
+const PROMPTS = [
+  'Design a 6-axis arm that lifts 25 kg and mounts on a 600 mm base.',
+  'Build a quadcopter with 30-min flight time and 2.4 kg MTOW.',
+  'Create a warehouse AMR that navigates autonomously at 1.5 m/s.'
+];
+
+class Component extends DCLogic {
+  state = {
+    active: 0,
+    menuOpen: false,
+    typedText: '',
+    userTyping: false,
+    imageOpacity: 0.9
+  };
+
+  // ── Typing effect ──
+  _promptIdx = 0;
+  _charIdx = 0;
+  _isDeleting = false;
+  _typeTimer = null;
+
+  _tick() {
+    if (this.state.userTyping) return;
+    const prompt = PROMPTS[this._promptIdx];
+    if (!this._isDeleting) {
+      this._charIdx++;
+      this.setState({ typedText: prompt.substring(0, this._charIdx) });
+      if (this._charIdx >= prompt.length) {
+        this._typeTimer = setTimeout(() => this._startDelete(), 2200);
+        return;
+      }
+      this._typeTimer = setTimeout(() => this._tick(), 45 + Math.random() * 30);
+    } else {
+      this._charIdx--;
+      this.setState({ typedText: prompt.substring(0, this._charIdx) });
+      if (this._charIdx <= 0) {
+        this._isDeleting = false;
+        this._promptIdx = (this._promptIdx + 1) % PROMPTS.length;
+        this._typeTimer = setTimeout(() => this._tick(), 500);
+        return;
+      }
+      this._typeTimer = setTimeout(() => this._tick(), 25);
+    }
+  }
+
+  _startDelete() {
+    this._isDeleting = true;
+    this._tick();
+  }
+
+  // ── Scroll reveal observer ──
+  _observer = null;
+  _setupReveal() {
+    if (typeof IntersectionObserver === 'undefined') {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('revealed'));
+      return;
+    }
+    this._observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const delay = parseFloat(entry.target.style.transitionDelay) || 0;
+          setTimeout(() => entry.target.classList.add('revealed'), delay);
+          this._observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => {
+      this._observer.observe(el);
+    });
+  }
+
+  // ── Parallax ──
+  _scrollHandler = null;
+  _setupParallax() {
+    const hero = document.getElementById('hero-section');
+    if (!hero) return;
+    this._scrollHandler = () => {
+      const scrollY = window.scrollY || window.pageYOffset;
+      const offset = scrollY * 0.25;
+      hero.style.backgroundPosition = `0 ${offset}px, ${offset}px 0, 0 ${offset * 0.5}px, ${offset * 0.5}px 0`;
+    };
+    window.addEventListener('scroll', this._scrollHandler, { passive: true });
+  }
+
+  // ── Smooth scroll for nav links ──
+  _navClickHandler = null;
+  _setupSmoothScroll() {
+    this._navClickHandler = (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (!link) return;
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Close mobile menu if open
+        if (this.state.menuOpen) {
+          this.setState({ menuOpen: false });
+        }
+      }
+    };
+    document.addEventListener('click', this._navClickHandler);
+  }
+
+  // ── Theme ──
+  applyTheme() {
+    const r = document.documentElement.style;
+    r.setProperty('--blue', this.props.accentBlue ?? '#FF4F18');
+    r.setProperty('--gap', (this.props.sectionSpacing ?? 160) + 'px');
+  }
+
+  componentDidMount() {
+    this.applyTheme();
+    this._tick();
+    // Delay reveal setup slightly to ensure DOM is ready
+    setTimeout(() => this._setupReveal(), 100);
+    this._setupParallax();
+    this._setupSmoothScroll();
+  }
+
+  componentDidUpdate() {
+    this.applyTheme();
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this._typeTimer);
+    if (this._observer) this._observer.disconnect();
+    if (this._scrollHandler) window.removeEventListener('scroll', this._scrollHandler);
+    if (this._navClickHandler) document.removeEventListener('click', this._navClickHandler);
+  }
+
+  renderVals() {
+    const active = this.state.active;
+    const self = this;
+    return {
+      typedText: this.state.typedText,
+      uploadHref: this.state.userTyping ? 'https://app.buildrobot.ai/' : 'javascript:void(0)',
+      uploadBg: this.state.userTyping ? 'var(--blue)' : 'var(--border)',
+      uploadCursor: this.state.userTyping ? 'pointer' : 'not-allowed',
+      handleInput: (e) => {
+        const val = e.target.value;
+        this.setState({ userTyping: val.length > 0 });
+      },
+      menuClass: this.state.menuOpen ? 'open' : '',
+      imageOpacity: this.state.imageOpacity,
+      toggleMenu: () => this.setState({ menuOpen: !this.state.menuOpen }),
+      factors: FACTORS.map((f, i) => ({
+        name: f.name,
+        spec: f.spec,
+        bg: i === active ? 'var(--surface)' : 'transparent',
+        fg: i === active ? 'var(--text-primary)' : 'var(--text-secondary)',
+        accent: i === active ? 'var(--blue)' : 'transparent',
+        select: () => {
+          if (i === active) return;
+          // Crossfade: fade out, swap, fade in
+          self.setState({ imageOpacity: 0 });
+          setTimeout(() => {
+            self.setState({ active: i, imageOpacity: 0.9 });
+          }, 350);
+        }
+      })),
+      activeImage: FACTORS[active].img,
+      activeLabel: FACTORS[active].label
+    };
+  }
+}
+</script>
+</body>
+</html>
