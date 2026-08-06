@@ -222,9 +222,9 @@
   </header>
 
   <!-- ════════ HERO ════════ -->
-  <section id="hero-section" style="position:relative; overflow:hidden; background:var(--surface); background-image:linear-gradient(rgba(20,21,23,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20,21,23,0.04) 1px, transparent 1px), linear-gradient(rgba(20,21,23,0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(20,21,23,0.09) 1px, transparent 1px); background-size:28px 28px, 28px 28px, 140px 140px, 140px 140px; border-bottom:1px solid var(--border); min-height:calc(100vh - 74px); display:flex; align-items:center;">
-
-    <div style="width:100%; max-width:var(--container-max); margin:0 auto; padding:40px var(--side-pad); display:flex; align-items:center; justify-content:space-between; gap:20px;">
+  <section id="hero-section" style="position:relative; overflow:hidden; background:var(--surface); border-bottom:1px solid var(--border); min-height:calc(100vh - 74px); display:flex; align-items:center;">
+    <canvas id="grid-canvas" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0;"></canvas>
+    <div style="position:relative; z-index:10; width:100%; max-width:var(--container-max); margin:0 auto; padding:40px var(--side-pad); display:flex; align-items:center; justify-content:space-between; gap:20px;">
 
       <!-- Info card - frosted glass (placed on left flank) -->
       <div class="hero-info-card" style="flex:0 0 auto; width:clamp(250px,22vw,300px); z-index:5;">
@@ -688,6 +688,304 @@ class Component extends DCLogic {
     };
   }
 }
+</script>
+
+<script>
+// Interactive Grid & Light Trails Animation
+function initInteractiveGrid(canvasId, enableScrollAnimation) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  let animationFrameId;
+  let width = canvas.width = canvas.offsetWidth;
+  let height = canvas.height = canvas.offsetHeight;
+
+  const parent = canvas.parentElement;
+  if (!parent) return;
+
+  const handleResize = () => {
+    width = canvas.width = canvas.offsetWidth;
+    height = canvas.height = canvas.offsetHeight;
+  };
+  window.addEventListener('resize', handleResize);
+
+  const mouse = { x: -1000, y: -1000, active: false, isTouch: false };
+  const scrollState = {
+    lastScrollY: window.scrollY || 0,
+    velocity: 0,
+    pulseEnergy: 0,
+    direction: 1
+  };
+
+  const pathSeed = {
+    phase1: Math.random() * Math.PI * 2,
+    phase2: Math.random() * Math.PI * 2,
+    phase3: Math.random() * Math.PI * 2,
+    freqMultiplier: 0.8 + Math.random() * 0.6,
+  };
+
+  const updateMouse = (x, y, active, isTouch = false) => {
+    mouse.x = x;
+    mouse.y = y;
+    mouse.active = active;
+    mouse.isTouch = isTouch;
+  };
+
+  const onMouseMove = (e) => {
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return;
+    const rect = parent.getBoundingClientRect();
+    updateMouse(e.clientX - rect.left, e.clientY - rect.top, true, false);
+  };
+
+  const onMouseLeave = () => {
+    updateMouse(-1000, -1000, false, false);
+  };
+
+  const getRandomizedScrollCoords = (currentY, rectTop) => {
+    const scrollFactor = currentY * 0.0022 * pathSeed.freqMultiplier;
+    const waveX1 = Math.sin(scrollFactor * 1.7 + pathSeed.phase1) * 0.28;
+    const waveX2 = Math.cos(scrollFactor * 3.1 + pathSeed.phase2) * 0.12;
+    const waveX3 = Math.sin(scrollFactor * 0.7 + pathSeed.phase3) * 0.06;
+    const normX = 0.5 + waveX1 + waveX2 + waveX3;
+    const randomizedX = Math.max(width * 0.1, Math.min(width * 0.9, width * normX));
+    const visibleCenterY = Math.min(height, Math.max(0, window.innerHeight * 0.5 - rectTop));
+    const waveY = Math.sin(scrollFactor * 2.3 + pathSeed.phase1) * 35;
+    const randomizedY = Math.min(height, Math.max(0, visibleCenterY + waveY));
+    return { x: randomizedX, y: randomizedY };
+  };
+
+  const onScroll = () => {
+    if (!enableScrollAnimation) return;
+    const currentY = window.scrollY;
+    const delta = currentY - scrollState.lastScrollY;
+    scrollState.lastScrollY = currentY;
+
+    const speed = Math.abs(delta);
+    const dir = delta >= 0 ? 1 : -1;
+    scrollState.direction = dir;
+    scrollState.velocity = scrollState.velocity * 0.6 + speed * 0.4;
+    scrollState.pulseEnergy = Math.min(2.0, scrollState.pulseEnergy + speed * 0.06);
+
+    if (!mouse.active || mouse.isTouch) {
+      const rect = parent.getBoundingClientRect();
+      if (rect.top <= window.innerHeight && rect.bottom >= 0) {
+        const pathPt = getRandomizedScrollCoords(currentY, rect.top);
+        mouse.x = pathPt.x;
+        mouse.y = pathPt.y;
+        mouse.active = true;
+        mouse.isTouch = true;
+      }
+    }
+  };
+
+  parent.addEventListener('mousemove', onMouseMove);
+  parent.addEventListener('mouseleave', onMouseLeave);
+
+  if (enableScrollAnimation) {
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  const gridSpacing = 50;
+  let rotationAngle = 0;
+  let lightTrails = [];
+
+  const maybeSpawnLightTrail = (cols, rows) => {
+    const maxTrails = enableScrollAnimation ? 20 : 6;
+    const attempts = scrollState.pulseEnergy > 0.1 ? 3 : 1;
+
+    for (let a = 0; a < attempts; a++) {
+      if (lightTrails.length < maxTrails && Math.random() < 0.35 + scrollState.pulseEnergy * 0.55) {
+        const isX = Math.random() > 0.5;
+        const focalCol = Math.floor((mouse.x / width) * cols);
+        const focalRow = Math.floor((mouse.y / height) * rows);
+
+        const useFocal = Math.random() > 0.3 && mouse.active;
+        const targetIndex = isX
+          ? Math.max(0, Math.min(cols, useFocal ? focalCol + Math.floor((Math.random() - 0.5) * 6) : Math.floor(Math.random() * cols)))
+          : Math.max(0, Math.min(rows, useFocal ? focalRow + Math.floor((Math.random() - 0.5) * 6) : Math.floor(Math.random() * rows)));
+
+        lightTrails.push({
+          axis: isX ? 'x' : 'y',
+          index: targetIndex,
+          position: Math.random() * (isX ? height : width),
+          speed: (4 + Math.random() * 8 + scrollState.velocity * 0.5) * (Math.random() > 0.15 ? scrollState.direction : -1),
+          length: 40 + Math.random() * 120,
+          opacity: 0.3 + Math.min(0.6, scrollState.pulseEnergy * 0.4),
+        });
+      }
+    }
+  };
+
+  const getDistortedPoint = (x, y, mx, my, active, energy) => {
+    if (!active && energy < 0.05) return { x, y, pull: 0 };
+    const dx = x - mx;
+    const dy = y - my;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const radius = 320 + energy * 80;
+
+    if (dist < radius) {
+      const force = 1 - dist / radius;
+      const push = force * force * (45 + energy * 25);
+      return {
+        x: x + (dist > 0 ? (dx / dist) * push : 0),
+        y: y + (dist > 0 ? (dy / dist) * push : 0),
+        pull: force + energy * 0.25,
+      };
+    }
+    return { x, y, pull: energy * 0.1 };
+  };
+
+  const draw = () => {
+    ctx.clearRect(0, 0, width, height);
+    rotationAngle += 0.005 + scrollState.velocity * 0.002;
+    scrollState.pulseEnergy *= 0.92;
+    scrollState.velocity *= 0.9;
+
+    const energy = scrollState.pulseEnergy;
+    const cols = Math.ceil(width / gridSpacing);
+    const rows = Math.ceil(height / gridSpacing);
+
+    maybeSpawnLightTrail(cols, rows);
+
+    for (let c = 0; c <= cols; c++) {
+      const originalX = c * gridSpacing;
+      ctx.beginPath();
+      const start = getDistortedPoint(originalX, 0, mouse.x, mouse.y, mouse.active, energy);
+      ctx.moveTo(start.x, start.y);
+      for (let y = 12; y <= height; y += 12) {
+        const pt = getDistortedPoint(originalX, y, mouse.x, mouse.y, mouse.active, energy);
+        ctx.lineTo(pt.x, pt.y);
+      }
+      if (mouse.active || energy > 0.05) {
+        const activeRadius = 350 + energy * 100;
+        const gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, activeRadius);
+        gradient.addColorStop(0, `rgba(241, 85, 43, ${0.11 + energy * 0.15})`);
+        gradient.addColorStop(0.5, `rgba(241, 85, 43, ${0.035 + energy * 0.06})`);
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0.015)');
+        ctx.strokeStyle = gradient;
+      } else {
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.025)';
+      }
+      ctx.lineWidth = 1 + energy * 0.3;
+      ctx.stroke();
+    }
+
+    for (let r = 0; r <= rows; r++) {
+      const originalY = r * gridSpacing;
+      ctx.beginPath();
+      const start = getDistortedPoint(0, originalY, mouse.x, mouse.y, mouse.active, energy);
+      ctx.moveTo(start.x, start.y);
+      for (let x = 12; x <= width; x += 12) {
+        const pt = getDistortedPoint(x, originalY, mouse.x, mouse.y, mouse.active, energy);
+        ctx.lineTo(pt.x, pt.y);
+      }
+      if (mouse.active || energy > 0.05) {
+        const activeRadius = 350 + energy * 100;
+        const gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, activeRadius);
+        gradient.addColorStop(0, `rgba(241, 85, 43, ${0.11 + energy * 0.15})`);
+        gradient.addColorStop(0.5, `rgba(241, 85, 43, ${0.035 + energy * 0.06})`);
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0.015)');
+        ctx.strokeStyle = gradient;
+      } else {
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.025)';
+      }
+      ctx.lineWidth = 1 + energy * 0.3;
+      ctx.stroke();
+    }
+
+    for (let i = lightTrails.length - 1; i >= 0; i--) {
+      const trail = lightTrails[i];
+      trail.position += trail.speed;
+      const maxPos = trail.axis === 'x' ? height : width;
+      if (trail.position > maxPos + trail.length || trail.position < -trail.length) {
+        lightTrails.splice(i, 1);
+        continue;
+      }
+      ctx.save();
+      ctx.beginPath();
+      ctx.shadowColor = 'rgba(241, 85, 43, 0.45)';
+      ctx.shadowBlur = 6;
+      const trailAlpha = Math.min(0.85, trail.opacity * 0.85);
+      if (trail.axis === 'x') {
+        const x = trail.index * gridSpacing;
+        const grad = ctx.createLinearGradient(x, trail.position - trail.length, x, trail.position);
+        grad.addColorStop(0, 'rgba(241, 85, 43, 0)');
+        grad.addColorStop(0.7, `rgba(241, 85, 43, ${trailAlpha * 0.7})`);
+        grad.addColorStop(1, `rgba(241, 85, 43, ${trailAlpha})`);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.8 + energy * 1.0;
+        ctx.moveTo(x, Math.max(0, trail.position - trail.length));
+        ctx.lineTo(x, Math.min(height, trail.position));
+      } else {
+        const y = trail.index * gridSpacing;
+        const grad = ctx.createLinearGradient(trail.position - trail.length, y, trail.position, y);
+        grad.addColorStop(0, 'rgba(241, 85, 43, 0)');
+        grad.addColorStop(0.7, `rgba(241, 85, 43, ${trailAlpha * 0.7})`);
+        grad.addColorStop(1, `rgba(241, 85, 43, ${trailAlpha})`);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.8 + energy * 1.0;
+        ctx.moveTo(Math.max(0, trail.position - trail.length), y);
+        ctx.lineTo(Math.min(width, trail.position), y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    for (let c = 0; c <= cols; c++) {
+      for (let r = 0; r <= rows; r++) {
+        const originalX = c * gridSpacing;
+        const originalY = r * gridSpacing;
+        const pt = getDistortedPoint(originalX, originalY, mouse.x, mouse.y, mouse.active, energy);
+        if (pt.pull > 0.08) {
+          ctx.save();
+          ctx.translate(pt.x, pt.y);
+          ctx.rotate(rotationAngle * (c % 2 === 0 ? 1 : -1));
+          ctx.shadowColor = 'rgba(241, 85, 43, 0.35)';
+          ctx.shadowBlur = 4;
+          ctx.beginPath();
+          ctx.arc(0, 0, 3 + pt.pull * 3.5, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(241, 85, 43, ${Math.min(0.55, pt.pull * 0.45)})`;
+          ctx.lineWidth = 1.0;
+          ctx.stroke();
+          ctx.beginPath();
+          const arm = 3.5 + pt.pull * 2.5;
+          ctx.moveTo(-arm - 2, 0);
+          ctx.lineTo(-2, 0);
+          ctx.moveTo(2, 0);
+          ctx.lineTo(arm + 2, 0);
+          ctx.moveTo(0, -arm - 2);
+          ctx.lineTo(0, -2);
+          ctx.moveTo(0, 2);
+          ctx.lineTo(0, arm + 2);
+          ctx.strokeStyle = `rgba(241, 85, 43, ${Math.min(0.6, pt.pull * 0.5)})`;
+          ctx.lineWidth = 1.0;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(0, 0, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(241, 85, 43, ${Math.min(0.85, pt.pull * 0.7)})`;
+          ctx.fill();
+          ctx.restore();
+        } else {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 0.7 + energy * 0.4, 0, Math.PI * 2);
+          ctx.fillStyle = energy > 0.1 ? `rgba(241, 85, 43, ${0.08 + energy * 0.12})` : 'rgba(0, 0, 0, 0.025)';
+          ctx.fill();
+        }
+      }
+    }
+
+    animationFrameId = requestAnimationFrame(draw);
+  };
+  draw();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    initInteractiveGrid('grid-canvas', false);
+  }, 100);
+});
 </script>
 </body>
 </html>
